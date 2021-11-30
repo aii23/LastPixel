@@ -1,0 +1,6 @@
+# Node modules
+src/dapp/node_modules
+
+# Build 
+contract/build/ 
+src/dapp/src/contract/
