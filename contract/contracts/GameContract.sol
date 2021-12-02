@@ -36,7 +36,7 @@ contract GameContract {
     uint lastGame;
 
     event GameCreated(uint gameId, address indexed creator);
-    event CellColored(uint indexed gameId, address indexed adr, uint coords, uint newTime);
+    event CellColored(uint indexed gameId, address indexed adr, uint coords, uint8 color, uint newTime);
     event GameFinished(uint indexed gameId, uint winingColor);
     event GotWining(address indexed winner, uint wining);
     event ResumeGame(uint indexed prevGameId, uint indexed newGameId);
@@ -51,13 +51,8 @@ contract GameContract {
         _;
     }
 
-    modifier inActiveGame(uint gameId) {
-        require(games[gameId].isActive, "Game is not active");
-        _;
-    }
-
     modifier finishedGame(uint gameId) {
-        require(!games[gameId].isActive, "Game is still active");
+        require(!games[gameId].isActive, "The game is not finished yet");
         _;
     }
 
@@ -79,7 +74,7 @@ contract GameContract {
         emit GameCreated(lastGame - 1, msg.sender);
     }
 
-    function resumeGame(uint gameId) finishedGame(gameId) external {
+    function resumeGame(uint gameId) existingGame(gameId) finishedGame(gameId) external {
         require(!games[lastGame].isExist, "Game already created(I dont know why...)");
 
         Game storage prevGame = games[gameId];
@@ -143,15 +138,17 @@ contract GameContract {
         if (curGame.colorsCount[color] == 100) {
             curGame.isActive = false;
             curGame.colorWin = true;
+            curGame.winingColor = color;
             emit GameFinished(gameId, color);
         }
 
-        emit CellColored(gameId, msg.sender, 10 * x + y, block.timestamp);
+        emit CellColored(gameId, msg.sender, 10 * x + y, color, block.timestamp);
 
-        payable(msg.sender).transfer(msg.value - prevPrice);
+        (bool success, ) = msg.sender.call{value: msg.value - prevPrice}("");
+        require(success, "Transfer failed.");
     }
 
-    function getWinning(uint gameId) external existingGame(gameId) finishedGame(gameId) {
+    function getWining(uint gameId) external existingGame(gameId) finishedGame(gameId) {
         Game storage curGame = games[gameId];
         require(!curGame.gotWining[msg.sender], "You already got your wining");
 
@@ -160,14 +157,16 @@ contract GameContract {
             uint wining = (amountOfCells * curGame.colorBank) / 100;
             curGame.gotWining[msg.sender] = true; 
             // curGame.colorBank -= wining; ??
-            payable(msg.sender).transfer(wining);
+            (bool success, ) = msg.sender.call{value: wining}("");
+            require(success, "Transfer failed.");
             emit GotWining(msg.sender, wining);
         } else {
             if (msg.sender == curGame.lastUpdateBy) {
                 uint wining = curGame.timeBank;
                 curGame.gotWining[msg.sender] = true; 
                 curGame.timeBank = 0;
-                payable(msg.sender).transfer(wining);
+                (bool success, ) = msg.sender.call{value: wining}("");
+                require(success, "Transfer failed.");
                 emit GotWining(msg.sender, wining);
             }
         }

@@ -30120,12 +30120,12 @@
         }
       },
       "links": {},
-      "address": "0x6b97958Cd7192b398Eb184e9161A2d435600608D",
-      "transactionHash": "0x17e9e8bb8947b3635e17de05c10ae74b4d1f6c9e3dc14688a40b20b3ae28b4b4"
+      "address": "0x95D4C050948AC0d951CB2Ec3CC8A808332a226a7",
+      "transactionHash": "0xbf6d40b845385a9ee54cd815dee2699c6c55496ffa9a9e54d65fbb64700c99ea"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-11-30T14:17:03.332Z",
+  "updatedAt": "2021-11-30T15:23:52.120Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
